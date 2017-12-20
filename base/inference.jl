@@ -2087,7 +2087,7 @@ end
 
 const deprecated_sym = Symbol("deprecated.jl")
 
-function method_for_inference_heuristics(cinfo, default::Method)::Method
+function method_for_inference_heuristics(cinfo, default)
     if isa(cinfo, CodeInfo)
         # appropriate format for `sig` is svec(ftype, argtypes, world)
         sig = cinfo.signature_for_inference_heuristics
@@ -2104,7 +2104,7 @@ function method_for_inference_heuristics(cinfo, default::Method)::Method
     return default
 end
 
-function method_for_inference_heuristics(method::Method, @nospecialize(sig), sparams, world)::Method
+function method_for_inference_heuristics(method::Method, @nospecialize(sig), sparams, world)
     if isdefined(method, :generator) && method.generator.expand_early
         method_instance = code_for_method(method, sig, sparams, world, false)
         if isa(method_instance, MethodInstance)
