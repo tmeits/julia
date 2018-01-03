@@ -352,3 +352,53 @@ any(x::Tuple{Bool, Bool, Bool}) = x[1]|x[2]|x[3]
 Returns an empty tuple, `()`.
 """
 empty(x::Tuple) = ()
+
+## Linked-list representation of a tuple. Inferrable even for Type elements.
+
+struct TupleLL{T, Rest}
+    head::T    # car
+    rest::Rest # cdr
+    TupleLL(x, rest::TupleLL) where {} = new{Core.Typeof(x), typeof(rest)}(x, rest) # (cons x rest)
+    TupleLL(x, rest::Nothing) where {} = new{Core.Typeof(x), typeof(rest)}(x, rest) # (cons x nil)
+    TupleLL(x) where {} = new{Core.Typeof(x), Nothing}(x, nothing) # (list x)
+    TupleLL() where {} = new{Nothing, Nothing}(nothing, nothing)
+end
+# (apply list a)
+make_TupleLL() = TupleLL()
+make_TupleLL(a) = TupleLL(a)
+make_TupleLL(a, args...) = TupleLL(a, make_TupleLL(args...))
+
+# (map f tt)
+map(f, tt::TupleLL{Nothing, Nothing}) = ()
+map(f, tt::TupleLL{<:Any, Nothing}) = (f(tt.head),)
+function map(f, tt::TupleLL)
+    return (f(tt.head), map(f, tt.rest)...)
+end
+
+mapTupleLL(f, tt::TupleLL{Nothing, Nothing}) = TupleLL()
+mapTupleLL(f, tt::TupleLL{<:Any, Nothing}) = TupleLL(f(tt.head),)
+function mapTupleLL(f, tt::TupleLL)
+    return TupleLL(f(tt.head), mapTupleLL(f, tt.rest))
+end
+
+convert(::Type{Tuple}, tt::TupleLL) = map(identity, tt)
+(::Type{Tuple})(tt::TupleLL) = convert(Tuple, tt)
+
+any(f::Function, tt::TupleLL{Nothing, Nothing}) = false
+any(f::Function, tt::TupleLL{<:Any, Nothing}) = f(tt.head)
+any(f::Function, tt::TupleLL) = f(tt.head) || any(f, tt.rest)
+
+all(f::Function, tt::TupleLL{Nothing, Nothing}) = true
+all(f::Function, tt::TupleLL{<:Any, Nothing}) = f(tt.head)
+all(f::Function, tt::TupleLL) = f(tt.head) && all(f, tt.rest)
+
+start(tt::TupleLL) = tt
+next(::TupleLL, tt::TupleLL) = (tt.head, tt.rest)
+done(::TupleLL{Nothing, Nothing}, tt::TupleLL{Nothing, Nothing}) = true
+done(::TupleLL, tt::Nothing) = true
+done(::TupleLL, tt::TupleLL) = false
+
+length(tt::TupleLL{Nothing, Nothing}) = 0
+length(tt::TupleLL) = _length(1, tt.rest)
+_length(l::Int, tt::TupleLL) = _length(l+1, tt.rest)
+_length(l::Int, ::Nothing) = l
