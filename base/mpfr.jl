@@ -261,9 +261,9 @@ Float32(x::BigFloat, r::RoundingMode) =
 # TODO: avoid double rounding
 Float16(x::BigFloat, r::RoundingMode) = convert(Float16, Float32(x, r))
 
-promote_rule(::Type{BigFloat}, ::Type{<:Real}) = BigFloat
-promote_rule(::Type{BigInt}, ::Type{<:AbstractFloat}) = BigFloat
-promote_rule(::Type{BigFloat}, ::Type{<:AbstractFloat}) = BigFloat
+promote_strict_rule(::Type{BigFloat}, ::Type{<:Real}) = BigFloat
+promote_strict_rule(::Type{BigInt}, ::Type{<:AbstractFloat}) = BigFloat
+promote_strict_rule(::Type{BigFloat}, ::Type{<:AbstractFloat}) = BigFloat
 
 big(::Type{<:AbstractFloat}) = BigFloat
 
