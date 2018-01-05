@@ -302,12 +302,6 @@ for f in (:pow_fast, :atan2_fast, :hypot_fast, :max_fast, :min_fast, :minmax_fas
     @eval import .FastMath: $f
     @eval @dep_vectorize_2arg Number $f
 end
-for f in (
-        :max, :min, # base/math.jl
-        :copysign, :flipsign, # base/floatfuncs.jl
-    )
-    @eval @dep_vectorize_2arg Real $f
-end
 
 # Deprecate @vectorize_1arg and @vectorize_2arg themselves
 macro vectorize_1arg(S, f)
